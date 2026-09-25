@@ -1,0 +1,22 @@
+---
+title: "Obstetrics_oahu"
+format: html
+editor: visual
+---
+
+```{r}
+##libraries
+library(tidyverse)
+library(sf) 
+library(here)
+library(tigris)
+library(mapview)
+library(tidycensus)
+library(arcgis)
+library(dplyr)
+```
+
+```{r}
+##arcgis stuff
+
+```
