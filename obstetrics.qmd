@@ -14,9 +14,84 @@ library(mapview)
 library(tidycensus)
 library(arcgis)
 library(dplyr)
+library(osmdata)
+library(ggplot2)
+library(tibble)
+```
+
+## openstreetmap 
+
+### for hospital location layer 
+
+(alternative to arcgis.)
+
+Oms features
+
+```{r}
+# List the features of OSM data
+available_features()
 ```
 
 ```{r}
-##arcgis stuff
+#grabbing oahu specific 
+hi_bb <- getbb("Hawaii", featuretype = "state")
+```
 
+## CMS file 
+
+```{r}
+#reading in cms data
+cms <- read.csv(here("data", "cmshawaii.csv"),
+                colClasses = "character")
+
+oahu_ob <- cms %>%
+  filter(STATE_CD == "HI",
+         FIPS_CNTY_CD == "003",
+         PRVDR_CTGRY_CD == "01",
+         PGM_TRMNTN_CD == "00",
+         OB_SRVC_CD %in% c("1", "2", "3"))
+```
+
+exploring oahu obstetric hospitals
+
+note: explain why the cms file is a valid source for hospital obstetrics
+
+```{r}
+#claude assisted vis. for xploration purposes, not included in analysis (claude for column name meanings and tables)
+oahu_ob <- oahu_ob %>%
+  mutate(
+    ob_service = case_when(OB_SRVC_CD == "1" ~ "Staff",
+                           OB_SRVC_CD == "2" ~ "Under arrangement",
+                           OB_SRVC_CD == "3" ~ "Staff and arrangement"),
+    nursery    = if_else(NEONTL_NRSRY_SRVC_CD %in% c("1", "2", "3"), "Yes", "No"),
+    nicu       = if_else(NEONTL_ICU_SRVC_CD %in% c("1", "2", "3"), "Yes", "No"),
+    beds       = as.numeric(BED_CNT),
+    cert_date  = as.Date(CRTFCTN_DT, format = "%Y%m%d")
+  )
+
+# One-row-per-hospital overview
+oahu_ob %>%
+  select(FAC_NAME, CITY_NAME, ob_service, nursery, nicu, beds, cert_date) %>%
+  arrange(desc(beds))
+```
+
+Missing tripler, probably because its a military only hospital. Soo I need to add manually.
+
+```{r}
+tripler <- tibble(
+  FAC_NAME  = "TRIPLER ARMY MEDICAL CENTER",
+  ST_ADR    = "1 JARRETT WHITE RD",
+  CITY_NAME = "HONOLULU",
+  ZIP_CD    = "96859",
+  BED_CNT   = "450"   
+)
+
+birth_hospitals <- oahu_ob %>%
+  select(FAC_NAME, ST_ADR, CITY_NAME, ZIP_CD, BED_CNT) %>%
+  bind_rows(tripler) %>%
+  mutate(beds   = as.numeric(BED_CNT),
+         source = if_else(FAC_NAME == "TRIPLER ARMY MEDICAL CENTER",
+                          "Tripler", "CMS"))
+
+birth_hospitals
 ```
