@@ -19,24 +19,6 @@ library(ggplot2)
 library(tibble)
 ```
 
-## openstreetmap 
-
-### for hospital location layer 
-
-(alternative to arcgis.)
-
-Oms features
-
-```{r}
-# List the features of OSM data
-available_features()
-```
-
-```{r}
-#grabbing oahu specific 
-hi_bb <- getbb("Hawaii", featuretype = "state")
-```
-
 ## CMS file 
 
 ```{r}
@@ -95,3 +77,38 @@ birth_hospitals <- oahu_ob %>%
 
 birth_hospitals
 ```
+
+## openstreetmap 
+
+### for hospital location layer 
+
+(alternative to arcgis.)
+
+Oms features
+
+```{r}
+# List the features of OSM data
+available_features()
+```
+
+```{r}
+###creating oahu boundary box. then, pulling from openstreetmap specifically hospitals from the anmenitys
+oahu_bb <- c(-158.3, 21.2, -157.6, 21.75)
+
+osm_hosp <- opq(bbox = oahu_bb) %>%
+  add_osm_feature(key = "amenity", value = "hospital") %>%
+  osmdata_sf()
+
+osm_hosp
+```
+
+The output was 12 polygons (the hospitals) which openstreetmap makes through the 203 points. But I dont need all thoe points. So I need to get rid of these outlined points and only have the reference points for hospitals left.
+
+```{r}
+osm_hosp <- osm_hosp %>%
+  unique_osmdata()
+
+osm_hosp
+```
+
+Now theres 3 points and 12 polygons. Basically on OSM, people can choose how they "draw" things. They can do the polygons, which are outlines of buildings, or they can do "points". Points are more common for restaurants inside malls, or smaller locations.
