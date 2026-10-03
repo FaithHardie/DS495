@@ -19,7 +19,7 @@ library(ggplot2)
 library(tibble)
 ```
 
-## CMS file 
+## CMS file
 
 ```{r}
 #reading in cms data
@@ -65,7 +65,7 @@ tripler <- tibble(
   ST_ADR    = "1 JARRETT WHITE RD",
   CITY_NAME = "HONOLULU",
   ZIP_CD    = "96859",
-  BED_CNT   = "450"   
+  BED_CNT   = "11"   
 )
 
 birth_hospitals <- oahu_ob %>%
@@ -78,9 +78,9 @@ birth_hospitals <- oahu_ob %>%
 birth_hospitals
 ```
 
-## openstreetmap 
+## openstreetmap
 
-### for hospital location layer 
+### for hospital location layer
 
 (alternative to arcgis.)
 
@@ -112,3 +112,9 @@ osm_hosp
 ```
 
 Now theres 3 points and 12 polygons. Basically on OSM, people can choose how they "draw" things. They can do the polygons, which are outlines of buildings, or they can do "points". Points are more common for restaurants inside malls, or smaller locations.
+
+```{r}
+#what
+osm_hosp$osm_points$name
+osm_hosp$osm_polygons$name
+```
